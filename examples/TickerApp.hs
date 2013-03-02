@@ -3,7 +3,7 @@ module TickerApp (main) where
 
 import Prelude
 import FFI
-import JSApi
+import JSAPI
 import Ticker
 
 main :: Fay ()
@@ -12,5 +12,5 @@ main =
   
 handleLoad :: Event -> Fay Bool
 handleLoad _ = do
-  tickerInit
+  tickerInit "canvas"
   return False
