@@ -4,6 +4,7 @@ module JSAPI (
   Foreign
   , Event
   , Element
+  , addEventListener
   , addWindowEventListener
   , getElementById
   , setInterval
@@ -20,6 +21,10 @@ instance Foreign Event
 
 data Element
 instance Foreign Element
+
+-- | Add an event listener for the given event
+addEventListener :: Element -> String -> (Event -> Fay Bool) -> Fay ()
+addEventListener = ffi "%1['addEventListener'](%2,%3,false)"
 
 -- | Add a window event listener for the given event
 addWindowEventListener :: String -> (Event -> Fay Bool) -> Fay ()
