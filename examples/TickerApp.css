@@ -1,0 +1,48 @@
+.Toolbar {
+  float: left;
+  font-family: 'Trebuchet MS'; 
+  font-size: 14px;
+  font-variant: small-caps;
+  text-align: center;
+  background: #F2F7FE;
+  padding: 10px 15px 3px 10px;
+  margin-bottom: 1px;
+  margin-right: 1px;
+  border: 1px solid #7B899B;
+}
+
+img {
+  padding: 4px;
+  border: 2px solid #F2F7FE;
+}
+
+img:hover {
+  border: 2px groove #E4F0FE;
+  background: white;
+}
+
+img.Selected {
+  border: 2px groove #E4F0FE;
+}
+
+.TopContainer {
+  float: left;
+  font-family: 'Trebuchet MS'; 
+  font-size: 14px;
+  font-variant: small-caps;
+  text-align: center;
+  background: #F2F7FE;
+  padding: 10px 15px 3px 10px;
+  margin-bottom: 1px;
+  margin-right: 1px;
+  border: 1px solid #7B899B;
+}
+
+.CanvasContainer {
+  float: left;
+  background: #F2F7FE;
+  padding: 3px 3px 3px 3px;
+  margin-bottom: 1px;
+  margin-right: 1px;
+  border: 1px solid #7B899B;
+}

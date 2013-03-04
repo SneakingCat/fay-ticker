@@ -1,12 +1,21 @@
 <!doctype html>
 <html>
   <head>
-    <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="TickerApp.css">
     <script type="text/javascript" src="TickerApp.js"></script>
   </head>
   <body>
-    <div>
-      <canvas id="canvas"></canvas>
+    <div class="TopContainer">
+      -Throughput Ticker-<br>
+      <div class="Toolbar">
+	-Graph Mode-<br>
+	<img id="TickerCurveButton" src="TickerCurve.png" alt="Curve Mode">
+	<img id="TickerBarButton" src="TickerBar.png" alt="Bar Mode">
+      </div>
+      <div class="CanvasContainer">
+	<canvas id="canvas"></canvas>
+      </div>
     </div>
   </body>
 </html>
