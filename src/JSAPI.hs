@@ -7,6 +7,7 @@ module JSAPI (
   , addEventListener
   , addWindowEventListener
   , getElementById
+  , setClassName
   , setInterval
   , alert
   ) where
@@ -33,6 +34,10 @@ addWindowEventListener = ffi "window['addEventListener'](%1,%2,false)"
 -- | Get an element from the document
 getElementById :: String -> Fay Element
 getElementById = ffi "document['getElementById'](%1)"
+
+-- | Set the class name property
+setClassName :: String -> Element -> Fay ()
+setClassName = ffi "%2['className']=%1"
 
 -- | Set a timer
 setInterval :: Fay () -> Double -> Fay ()

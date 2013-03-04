@@ -11,6 +11,7 @@ import Ref
 
 data State = State {
   drawingContext :: Context
+  , graphButtons :: [Element]
   , startTime    :: Int
   }
 
@@ -18,21 +19,41 @@ data State = State {
 tickerInit :: String -> Fay ()
 tickerInit name = do
   -- Fetch canvas and canvas context
-  canvas    <- getElementById name
-  context  <- getContext canvas "2d"
+  canvas  <- getElementById name
+  context <- getContext canvas "2d"
   
   -- Setting dimensions for the canvas
   setWidth canvas $ floor cwidth
   setHeight canvas $ floor cheight
   
+  -- Fetching the graph button references
+  curveButton <- getElementById "CurveButton"
+  barButton   <- getElementById "BarButton"
+  
+  -- Make the "curve mode" the initial mode
+  setClassName "Selected" curveButton
+  
   -- Create the global state
-  state <- newRef $ State {drawingContext=context, startTime=0}
+  state <- newRef $ State {drawingContext=context
+                          , graphButtons=[curveButton,barButton]
+                          , startTime=0}
+           
+  -- Install event handlers
+  addEventListener curveButton "click" (handleGraphButton state curveButton)
+  addEventListener barButton "click" (handleGraphButton state barButton)
 
   -- Initial rendering of the graph
   render state
   
   -- Activete the animation timer
   setInterval (animate state) 1000
+  
+handleGraphButton :: Ref State -> Element -> Event -> Fay Bool  
+handleGraphButton state me _ = do
+  state' <- readRef state
+  mapM_ (setClassName "") $ graphButtons state'
+  setClassName "Selected" me
+  return False
   
 -- | React upon timer and drive the animation
 animate :: Ref State -> Fay ()
