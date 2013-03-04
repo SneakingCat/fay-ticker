@@ -200,9 +200,11 @@ mkDummyData num start mx =
    TimeSerie mx (d, t)
   where
     mkItem n  = DataItem n $ mkValue (n+start)
-    mkValue n = (1 + (sin $ fromIntegral n)) * (mx/2)
+    mkValue n = (1 + (sin $ freq * rad * fromIntegral n)) * (mx/2)
     mkTime n  = TimeItem n (n+start)
     isMod5 n  = n `mod` 5 == 0
+    rad       = (2*pi)/(fromIntegral num)
+    freq      = 2
     
 -- | Convert a number of seconds to format "hh:mm:ss"
 secsToString :: Int -> String
