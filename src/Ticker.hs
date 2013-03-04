@@ -12,6 +12,7 @@ import Ref
 data State = State {
   drawingContext :: Context
   , graphButtons :: [Element]
+  , dataRenderer :: DataRenderer
   , startTime    :: Int
   }
 
@@ -36,11 +37,14 @@ tickerInit name = do
   -- Create the global state
   state <- newRef $ State {drawingContext=context
                           , graphButtons=[curveButton,barButton]
+                          , dataRenderer=renderDataPointsCurve
                           , startTime=0}
            
   -- Install event handlers
-  addEventListener curveButton "click" (handleGraphButton state curveButton)
-  addEventListener barButton "click" (handleGraphButton state barButton)
+  addEventListener curveButton "click" 
+    (handleGraphButton state renderDataPointsCurve curveButton)
+  addEventListener barButton "click" 
+    (handleGraphButton state renderDataPointsBar barButton)
 
   -- Initial rendering of the graph
   render state
@@ -48,11 +52,17 @@ tickerInit name = do
   -- Activete the animation timer
   setInterval (animate state) 1000
   
-handleGraphButton :: Ref State -> Element -> Event -> Fay Bool  
-handleGraphButton state me _ = do
-  state' <- readRef state
+handleGraphButton :: Ref State    -> 
+                     DataRenderer -> 
+                     Element      -> 
+                     Event        -> 
+                     Fay Bool  
+handleGraphButton state renderer me _ = do
+  state' <- readRef state  
   mapM_ (setClassName "") $ graphButtons state'
+  writeRef state $ state' {dataRenderer=renderer}
   setClassName "Selected" me
+  render state
   return False
   
 -- | React upon timer and drive the animation
@@ -74,17 +84,20 @@ render state = do
   fillRect context (0, 0) (cwidth, cheight)
   
   setStrokeStyle context "#358800"
-  setLineWidth context 1
   renderHorizonalLines context
   setFont context "9px sans-serif"
   let dummyData = mkDummyData 60 start 100
   renderTimeMarks context dummyData
   setStrokeStyle context "red"
-  renderDataPoints context dummyData
+
+  -- The data renderer is taken from the state
+  let renderer = dataRenderer state'
+  renderer context dummyData
 
 -- | Render horizonal lines to mark levels on the y-axis
 renderHorizonalLines :: Context -> Fay ()
 renderHorizonalLines context = do
+  setLineWidth context 1
   beginPath context
   forM_ [0,10 .. 100] -- Parameter driven?
     (\p ->
@@ -95,6 +108,7 @@ renderHorizonalLines context = do
 -- | Render marks on the x-axis
 renderTimeMarks :: Context -> TimeSerie -> Fay ()
 renderTimeMarks context (TimeSerie _ (_,timeItems)) = do
+  setLineWidth context 1
   beginPath context
   setTextBaseline context "middle"
   forM_ timeItems 
@@ -108,9 +122,12 @@ renderTimeMarks context (TimeSerie _ (_,timeItems)) = do
     )
   stroke context
 
--- | Render the data points
-renderDataPoints :: Context -> TimeSerie -> Fay ()
-renderDataPoints context (TimeSerie mx (p:ps, _)) = do
+type DataRenderer = Context -> TimeSerie -> Fay ()
+
+-- | Render the data points as a curve
+renderDataPointsCurve :: DataRenderer
+renderDataPointsCurve context (TimeSerie mx (p:ps, _)) = do
+  setLineWidth context 1.5
   beginPath context
   -- First move the pen to the position of the first point
   initialMove p
@@ -125,7 +142,23 @@ renderDataPoints context (TimeSerie mx (p:ps, _)) = do
     initialMove (DataItem xVal yVal) = 
       moveTo context (xOnGraph . fromIntegral $ xVal,
                       yOnGraph . norm $ yVal)
-
+      
+-- | Render the data points as bars
+renderDataPointsBar :: DataRenderer
+renderDataPointsBar context (TimeSerie mx (ps,_)) = do
+  setLineWidth context 5
+  beginPath context
+  forM_ ps
+    (\(DataItem xVal yVal) -> do
+      moveTo context (xOnGraph . fromIntegral $ xVal,
+                      yOnGraph . norm $ yVal)
+      lineTo context (xOnGraph . fromIntegral $ xVal,
+                      yOnGraph 0)
+    )
+  stroke context
+  where 
+    norm n = (n/mx) * 100
+      
 -- | Map an x-axis value to graph position to draw it
 yOnGraph :: Double -> Double
 yOnGraph y = gbottom - gheight * (y/100)
