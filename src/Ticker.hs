@@ -9,34 +9,45 @@ import JSAPI
 import CanvasAPI
 import Ref
 
+data State = State {
+  drawingContext :: Context
+  , startTime    :: Int
+  }
+
 -- | Init the ticker
 tickerInit :: String -> Fay ()
 tickerInit name = do
-  -- Fetch canvas and context
-  canvas <- getElementById name
-  context <- getContext canvas "2d"
+  -- Fetch canvas and canvas context
+  canvas    <- getElementById name
+  context  <- getContext canvas "2d"
   
   -- Setting dimensions for the canvas
   setWidth canvas $ floor cwidth
   setHeight canvas $ floor cheight
   
+  -- Create the global state
+  state <- newRef $ State {drawingContext=context, startTime=0}
+
   -- Initial rendering of the graph
-  render context 0
+  render state
   
   -- Activete the animation timer
-  currTime <- newRef (1 :: Int)
-  setInterval (animate context currTime) 1000
+  setInterval (animate state) 1000
   
--- | Animate
-animate :: Context -> Ref Int -> Fay ()
-animate context currTime = do
-  start <- readRef currTime
-  render context start
-  writeRef currTime (start+1)  
+-- | React upon timer and drive the animation
+animate :: Ref State -> Fay ()
+animate state = do
+  state' <- readRef state
+  writeRef state $ state' {startTime=startTime state'+1}
+  render state
 
 -- | Render the graph
-render :: Context -> Int -> Fay ()
-render context start = do
+render :: Ref State -> Fay ()
+render state = do
+  state' <- readRef state
+  let context = drawingContext state'
+  let start   = startTime state'
+      
   -- Fill the graph with the background color
   setFillStyle context "#040404"
   fillRect context (0, 0) (cwidth, cheight)
