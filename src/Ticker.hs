@@ -12,6 +12,7 @@ import Ref
 data State = State {
   drawingContext :: Context
   , graphButtons :: [Element]
+  , colorButtons :: [Element]
   , dataRenderer :: DataRenderer
   , graphColors  :: Colors
   , startTime    :: Int
@@ -34,20 +35,26 @@ tickerInit name = do
   setWidth canvas $ floor cwidth
   setHeight canvas $ floor cheight
   
-  -- Fetching the graph button references
+  -- Fetch the graph button references
   curveButton <- getElementById "CurveButton"
   barButton   <- getElementById "BarButton"
   
   -- Make the "curve mode" the initial mode
   setClassName "Selected" curveButton
   
+  -- Fetch the color scheme button references
+  blackButton <- getElementById "BlackButton"
+  blueButton  <- getElementById "BlueButton"
+  
+  -- Make the "black scheme" the initial scheme
+  setClassName "Selected" blackButton
+  
   -- Create the global state
   state <- newRef $ State {drawingContext=context
                           , graphButtons=[curveButton,barButton]
+                          , colorButtons=[blackButton,blueButton]
                           , dataRenderer=renderDataPointsCurve
-                          , graphColors=Colors {background="#040404"
-                                               , grid="#358800"
-                                               , plot="red"}
+                          , graphColors=blackColorScheme
                           , startTime=0}
            
   -- Install event handlers
@@ -55,6 +62,10 @@ tickerInit name = do
     (handleGraphButton state renderDataPointsCurve curveButton)
   addEventListener barButton "click" 
     (handleGraphButton state renderDataPointsBar barButton)
+  addEventListener blackButton "click"
+    (handleColorButton state blackColorScheme blackButton)
+  addEventListener blueButton "click"
+    (handleColorButton state blueColorScheme blueButton)
 
   -- Initial rendering of the graph
   render state
@@ -62,6 +73,16 @@ tickerInit name = do
   -- Activete the animation timer
   setInterval (animate state) 1000
   
+blackColorScheme :: Colors
+blackColorScheme = Colors {background="#040404"
+                          , grid     ="#358800"
+                          , plot     ="red"}
+                   
+blueColorScheme :: Colors
+blueColorScheme = Colors {background="#F2F7FE"
+                         , grid     ="#7B899B"
+                         , plot     ="#7B899B"}
+
 handleGraphButton :: Ref State    -> 
                      DataRenderer -> 
                      Element      -> 
@@ -71,6 +92,19 @@ handleGraphButton state renderer me _ = do
   state' <- readRef state  
   mapM_ (setClassName "") $ graphButtons state'
   writeRef state $ state' {dataRenderer=renderer}
+  setClassName "Selected" me
+  render state
+  return False
+  
+handleColorButton :: Ref State -> 
+                     Colors    -> 
+                     Element   -> 
+                     Event     -> 
+                     Fay Bool
+handleColorButton state colors me _ = do
+  state' <- readRef state
+  mapM_ (setClassName "") $ colorButtons state'
+  writeRef state $ state' {graphColors=colors}
   setClassName "Selected" me
   render state
   return False
