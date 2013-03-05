@@ -10,4 +10,5 @@ a "throughput ticker" could look like.
 TODO
 ----
 * Factor out the library parts of the Fay-Ticker to their own repo.
-* Connect a real server to make it a "real" ticker application
+* Make Cabal packet structure.
+* Connect a real server to make it a "real" ticker application.
