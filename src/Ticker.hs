@@ -17,6 +17,7 @@ data State = State {
   , colorButtons :: [Element]
   , dataRenderer :: DataRenderer
   , graphColors  :: Colors
+  , timeSerie    :: TimeSerie
   , startTime    :: Int
   }
              
@@ -58,7 +59,8 @@ tickerInit name = do
                           , colorButtons=[blackButton,blueButton]
                           , dataRenderer=renderDataPlotAsCurves
                           , graphColors=blackColorScheme
-                          , startTime=0}
+                          , timeSerie=mkSineTimeSerie 60 0 100
+                          , startTime=1}
            
   -- Install event handlers
   addEventListener curveButton "click" 
@@ -116,7 +118,8 @@ handleColorButton state colors me _ = do
 animate :: Ref State -> Fay ()
 animate state = do
   state' <- readRef state
-  writeRef state $ state' {startTime=startTime state'+1}
+  writeRef state $ state' {timeSerie=mkSineTimeSerie 60 (startTime state') 100
+                          , startTime=startTime state'+1}
   render state
 
 -- | Render the graph
@@ -124,7 +127,6 @@ render :: Ref State -> Fay ()
 render state = do
   state' <- readRef state
   let context = drawingContext state'
-  let start   = startTime state'
   let colors  = graphColors state'
       
   -- Fill the graph with the background color
@@ -134,13 +136,12 @@ render state = do
   setStrokeStyle context $ grid colors
   renderHorizonalLines context
   setFont context "9px sans-serif"
-  let dummyData = mkSineTimeSerie 60 start 100
-  renderTimeMarks context dummyData
+  renderTimeMarks context $ timeSerie state'
   setStrokeStyle context $ plot colors
 
   -- The data renderer is taken from the state
   let renderer = dataRenderer state'
-  renderer context dummyData
+  renderer context $ timeSerie state'
 
 -- | Render horizonal lines to mark levels on the y-axis
 renderHorizonalLines :: Context -> Fay ()
