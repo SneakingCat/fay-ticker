@@ -40,94 +40,60 @@ tickerInit name = do
   setHeight canvas $ floor cheight
   
   -- Fetch the graph button references
-  curveButton <- getElementById "CurveButton"
-  barButton   <- getElementById "BarButton"
-  
+  graphButtons' <- fetchButtons ["CurveButton", "BarButton"]
   -- Make the "curve mode" the initial mode
-  setClassName "Selected" curveButton
+  selectFirst graphButtons'
   
   -- Fetch the color scheme button references
-  blackButton <- getElementById "BlackButton"
-  blueButton  <- getElementById "BlueButton"
-  
+  colorButtons' <- fetchButtons ["BlackButton", "BlueButton"]
   -- Make the "black scheme" the initial scheme
-  setClassName "Selected" blackButton
+  selectFirst colorButtons'
   
   -- Create the global state
   state <- newRef $ State {drawingContext=context
-                          , graphButtons=[curveButton,barButton]
-                          , colorButtons=[blackButton,blueButton]
-                          , dataRenderer=renderDataPlotAsCurves
-                          , graphColors=blackColorScheme
-                          , timeSerie=mkSineTimeSerie 60 0 100
-                          , startTime=1}
+                          , graphButtons =graphButtons'
+                          , colorButtons =colorButtons'
+                          , dataRenderer =renderDataPlotAsCurves
+                          , graphColors  =blackColorScheme
+                          , timeSerie    =mkSineTimeSerie 60 0 100
+                          , startTime    =1}
            
   -- Install event handlers
-  addEventListener curveButton "click" 
-    (handleGraphButton state renderDataPlotAsCurves curveButton)
-  addEventListener barButton "click" 
-    (handleGraphButton state renderDataPlotAsBars barButton)
-  addEventListener blackButton "click"
-    (handleColorButton state blackColorScheme blackButton)
-  addEventListener blueButton "click"
-    (handleColorButton state blueColorScheme blueButton)
+  addButtonListeners graphButtons' handleGraphButton 
+    [renderDataPlotAsCurves, renderDataPlotAsBars] state
+  addButtonListeners colorButtons' handleColorButton
+    [blackColorScheme, blueColorScheme] state
 
   -- Initial rendering of the graph
   render state
   
   -- Activete the animation timer
   setInterval (animate state) 1000
-  
-blackColorScheme :: Colors
-blackColorScheme = Colors {background="#040404"
-                          , grid     ="#358800"
-                          , plot     ="red"}
-                   
-blueColorScheme :: Colors
-blueColorScheme = Colors {background="#F2F7FE"
-                         , grid     ="#7B899B"
-                         , plot     ="#7B899B"}
 
-handleGraphButton :: Ref State    -> 
-                     DataRenderer -> 
-                     Element      -> 
-                     Event        -> 
-                     Fay Bool  
-handleGraphButton state renderer me _ = do
-  state' <- readRef state  
-  mapM_ (setClassName "") $ graphButtons state'
-  writeRef state $ state' {dataRenderer=renderer}
-  setClassName "Selected" me
-  render state
-  return False
-  
-handleColorButton :: Ref State -> 
-                     Colors    -> 
-                     Element   -> 
-                     Event     -> 
-                     Fay Bool
-handleColorButton state colors me _ = do
-  state' <- readRef state
-  mapM_ (setClassName "") $ colorButtons state'
-  writeRef state $ state' {graphColors=colors}
-  setClassName "Selected" me
-  render state
-  return False
-  
--- | React upon timer and drive the animation
-animate :: Ref State -> Fay ()
-animate state = do
-  state' <- readRef state
-  writeRef state $ state' {timeSerie=mkSineTimeSerie 60 (startTime state') 100
-                          , startTime=startTime state'+1}
-  render state
+fetchButtons :: [String] -> Fay [Element]
+fetchButtons = mapM getElementById
+
+addButtonListeners :: [Element]                                        -> 
+                      (Ref State -> i -> Element -> Event -> Fay Bool) -> 
+                      [i]                                              -> 
+                      Ref State                                        ->
+                      Fay ()
+addButtonListeners buttons cb items state =
+  forM_ (zip buttons items) (\(b, i) ->
+                              addEventListener b "click" (cb state i b))
+
+selectFirst :: [Element] -> Fay ()
+selectFirst [] = return ()
+selectFirst (x:_) = setClassName "Selected" x
 
 -- | Render the graph
 render :: Ref State -> Fay ()
 render state = do
   state' <- readRef state
-  let context = drawingContext state'
-  let colors  = graphColors state'
+  let context  = drawingContext state'
+  let colors   = graphColors state'
+  let renderer = dataRenderer state'
+  let tserie   = timeSerie state'
       
   -- Fill the graph with the background color
   setFillStyle context $ background colors
@@ -136,12 +102,11 @@ render state = do
   setStrokeStyle context $ grid colors
   renderHorizonalLines context
   setFont context "9px sans-serif"
-  renderTimeMarks context $ timeSerie state'
+  renderTimeMarks context tserie
   setStrokeStyle context $ plot colors
 
   -- The data renderer is taken from the state
-  let renderer = dataRenderer state'
-  renderer context $ timeSerie state'
+  renderer context tserie
 
 -- | Render horizonal lines to mark levels on the y-axis
 renderHorizonalLines :: Context -> Fay ()
@@ -232,6 +197,54 @@ gwidth = gright + 1; gheight = gbottom - gtop + 1
 tbottom :: Double
 tbottom = cbottom - 2
     
+-- | Generate a black color scheme
+blackColorScheme :: Colors
+blackColorScheme = Colors {background="#040404"
+                          , grid     ="#358800"
+                          , plot     ="red"}
+
+-- | Generate a blue color scheme
+blueColorScheme :: Colors
+blueColorScheme = Colors {background="#F2F7FE"
+                         , grid     ="#7B899B"
+                         , plot     ="#7B899B"}          
+          
+-- | Handle the event of user clicking the graph buttons
+handleGraphButton :: Ref State    -> 
+                     DataRenderer -> 
+                     Element      -> 
+                     Event        -> 
+                     Fay Bool  
+handleGraphButton state renderer me _ = do
+  state' <- readRef state  
+  mapM_ (setClassName "") $ graphButtons state'
+  writeRef state $ state' {dataRenderer=renderer}
+  setClassName "Selected" me
+  render state
+  return False
+  
+-- | Handle the event of user clicking the color buttons
+handleColorButton :: Ref State -> 
+                     Colors    -> 
+                     Element   -> 
+                     Event     -> 
+                     Fay Bool
+handleColorButton state colors me _ = do
+  state' <- readRef state
+  mapM_ (setClassName "") $ colorButtons state'
+  writeRef state $ state' {graphColors=colors}
+  setClassName "Selected" me
+  render state
+  return False
+  
+-- | React upon timer and drive the animation
+animate :: Ref State -> Fay ()
+animate state = do
+  state' <- readRef state
+  writeRef state $ state' {timeSerie=mkSineTimeSerie 60 (startTime state') 100
+                          , startTime=startTime state'+1}
+  render state
+          
 -- | Convert a number of seconds to format "hh:mm:ss"
 secsToString :: Int -> String
 secsToString s = 
@@ -249,3 +262,10 @@ secsToString s =
 -- | Convert degrees to radians
 degToRad :: Double -> Double
 degToRad deg = (pi/180)*deg
+
+mapM :: (a -> Fay b) -> [a] -> Fay [b]
+mapM _ [] = return []
+mapM f (x:xs) = do
+  vx  <- f x
+  vxs <- mapM f xs
+  return (vx:vxs)
