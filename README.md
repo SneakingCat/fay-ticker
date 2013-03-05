@@ -3,7 +3,7 @@ Fay-Ticker
 
 Introduction
 ------------
-Fay-Ticker is a little test of the Fay programming language (see
+Fay-Ticker is a demo of the Fay programming language (see
 https://github.com/faylang/fay/wiki). The application is showing what
 a "throughput ticker" could look like.
 
