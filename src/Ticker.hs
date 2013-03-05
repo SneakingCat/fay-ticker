@@ -53,15 +53,15 @@ tickerInit name = do
   state <- newRef $ State {drawingContext=context
                           , graphButtons=[curveButton,barButton]
                           , colorButtons=[blackButton,blueButton]
-                          , dataRenderer=renderDataPointsCurve
+                          , dataRenderer=renderDataPlotAsCurves
                           , graphColors=blackColorScheme
                           , startTime=0}
            
   -- Install event handlers
   addEventListener curveButton "click" 
-    (handleGraphButton state renderDataPointsCurve curveButton)
+    (handleGraphButton state renderDataPlotAsCurves curveButton)
   addEventListener barButton "click" 
-    (handleGraphButton state renderDataPointsBar barButton)
+    (handleGraphButton state renderDataPlotAsBars barButton)
   addEventListener blackButton "click"
     (handleColorButton state blackColorScheme blackButton)
   addEventListener blueButton "click"
@@ -169,9 +169,9 @@ renderTimeMarks context (TimeSerie _ (_,timeItems)) = do
 
 type DataRenderer = Context -> TimeSerie -> Fay ()
 
--- | Render the data points as a curve
-renderDataPointsCurve :: DataRenderer
-renderDataPointsCurve context (TimeSerie mx (p:ps, _)) = do
+-- | Render the data plot as curves
+renderDataPlotAsCurves :: DataRenderer
+renderDataPlotAsCurves context (TimeSerie mx (p:ps, _)) = do
   setLineWidth context 1.5
   beginPath context
   -- First move the pen to the position of the first point
@@ -188,9 +188,9 @@ renderDataPointsCurve context (TimeSerie mx (p:ps, _)) = do
       moveTo context (xOnGraph . fromIntegral $ xVal,
                       yOnGraph . norm $ yVal)
       
--- | Render the data points as bars
-renderDataPointsBar :: DataRenderer
-renderDataPointsBar context (TimeSerie mx (ps,_)) = do
+-- | Render the data plot as bars
+renderDataPlotAsBars :: DataRenderer
+renderDataPlotAsBars context (TimeSerie mx (ps,_)) = do
   setLineWidth context 5
   beginPath context
   forM_ ps
