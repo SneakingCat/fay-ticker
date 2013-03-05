@@ -8,6 +8,7 @@ import FFI
 import JSAPI
 import CanvasAPI
 import Ref
+import TickerTimeSerie
 
 -- | Mutable state for the ticker
 data State = State {
@@ -24,17 +25,7 @@ data Colors = Colors {
   background :: String
   , grid     :: String
   , plot     :: String
-  }
-             
--- | Data structure for the time serie data. The time serie will be
--- rendered "as is", it's the server's responsibility to ensure the
--- format of the time serie
-data TimeSerie = TimeSerie Double ([DataItem], [TimeItem])
-               deriving Show
-data DataItem  = DataItem Int Double
-               deriving Show
-data TimeItem  = TimeItem Int Int
-               deriving Show
+  }             
 
 -- | Init the ticker
 tickerInit :: String -> Fay ()
@@ -143,7 +134,7 @@ render state = do
   setStrokeStyle context $ grid colors
   renderHorizonalLines context
   setFont context "9px sans-serif"
-  let dummyData = mkDummyData 60 start 100
+  let dummyData = mkSineTimeSerie 60 start 100
   renderTimeMarks context dummyData
   setStrokeStyle context $ plot colors
 
@@ -239,22 +230,6 @@ gwidth = gright + 1; gheight = gbottom - gtop + 1
 -- | Dimensions for the time stamp text
 tbottom :: Double
 tbottom = cbottom - 2
-
-mkDummyData :: Int -> Int -> Double -> TimeSerie
-mkDummyData num start mx =
-  let
-    ns = [0 .. num-1]
-    d  = map mkItem ns
-    t  = [mkTime n | n <- ns, isMod5 (n+start)]
-  in
-   TimeSerie mx (d, t)
-  where
-    mkItem n  = DataItem n $ mkValue (n+start)
-    mkValue n = (1 + (sin $ freq * rad * fromIntegral n)) * (mx/2)
-    mkTime n  = TimeItem n (n+start)
-    isMod5 n  = n `mod` 5 == 0
-    rad       = (2*pi)/(fromIntegral num)
-    freq      = 2
     
 -- | Convert a number of seconds to format "hh:mm:ss"
 secsToString :: Int -> String
