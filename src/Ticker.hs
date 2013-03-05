@@ -28,6 +28,9 @@ data Colors = Colors {
   , plot     :: String
   }             
 
+-- | Function signature for data renderers
+type DataRenderer = Context -> TimeSerie -> Fay ()
+
 -- | Init the ticker
 tickerInit :: String -> Fay ()
 tickerInit name = do
@@ -40,12 +43,12 @@ tickerInit name = do
   setHeight canvas $ floor cheight
   
   -- Fetch the graph button references
-  graphButtons' <- fetchButtons ["CurveButton", "BarButton"]
+  graphButtons' <- getElementsById ["CurveButton", "BarButton"]
   -- Make the "curve mode" the initial mode
   selectFirst graphButtons'
   
   -- Fetch the color scheme button references
-  colorButtons' <- fetchButtons ["BlackButton", "BlueButton"]
+  colorButtons' <- getElementsById ["BlackButton", "BlueButton"]
   -- Make the "black scheme" the initial scheme
   selectFirst colorButtons'
   
@@ -69,22 +72,6 @@ tickerInit name = do
   
   -- Activete the animation timer
   setInterval (animate state) 1000
-
-fetchButtons :: [String] -> Fay [Element]
-fetchButtons = mapM getElementById
-
-addButtonListeners :: [Element]                                        -> 
-                      (Ref State -> i -> Element -> Event -> Fay Bool) -> 
-                      [i]                                              -> 
-                      Ref State                                        ->
-                      Fay ()
-addButtonListeners buttons cb items state =
-  forM_ (zip buttons items) (\(b, i) ->
-                              addEventListener b "click" (cb state i b))
-
-selectFirst :: [Element] -> Fay ()
-selectFirst [] = return ()
-selectFirst (x:_) = setClassName "Selected" x
 
 -- | Render the graph
 render :: Ref State -> Fay ()
@@ -135,8 +122,8 @@ renderTimeMarks context (TimeSerie _ (_,timeItems)) = do
         strokeText context (secsToString s) (0, 0)
     )
   stroke context
-
-type DataRenderer = Context -> TimeSerie -> Fay ()
+  where
+    degToRad deg = (pi/180)*deg
 
 -- | Render the data plot as curves
 renderDataPlotAsCurves :: DataRenderer
@@ -209,6 +196,20 @@ blueColorScheme = Colors {background="#F2F7FE"
                          , grid     ="#7B899B"
                          , plot     ="#7B899B"}          
           
+-- | Register a button callback
+addButtonListeners :: [Element]                                        -> 
+                      (Ref State -> i -> Element -> Event -> Fay Bool) -> 
+                      [i]                                              -> 
+                      Ref State                                        ->
+                      Fay ()
+addButtonListeners buttons cb items state =
+  forM_ (zip buttons items) (\(b, i) ->
+                              addEventListener b "click" (cb state i b))
+
+selectFirst :: [Element] -> Fay ()
+selectFirst [] = return ()
+selectFirst (x:_) = setClassName "Selected" x
+
 -- | Handle the event of user clicking the graph buttons
 handleGraphButton :: Ref State    -> 
                      DataRenderer -> 
@@ -258,14 +259,3 @@ secsToString s =
      toStr n
        | n < 10    = "0" ++ (show n)
        | otherwise = show n
-                     
--- | Convert degrees to radians
-degToRad :: Double -> Double
-degToRad deg = (pi/180)*deg
-
-mapM :: (a -> Fay b) -> [a] -> Fay [b]
-mapM _ [] = return []
-mapM f (x:xs) = do
-  vx  <- f x
-  vxs <- mapM f xs
-  return (vx:vxs)

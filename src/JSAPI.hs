@@ -7,9 +7,11 @@ module JSAPI (
   , addEventListener
   , addWindowEventListener
   , getElementById
+  , getElementsById
   , setClassName
   , setInterval
   , alert
+  , mapM
   ) where
 
 import Prelude
@@ -35,6 +37,10 @@ addWindowEventListener = ffi "window['addEventListener'](%1,%2,false)"
 getElementById :: String -> Fay Element
 getElementById = ffi "document['getElementById'](%1)"
 
+-- | Get a list of elements from the document
+getElementsById :: [String] -> Fay [Element]
+getElementsById = mapM getElementById
+
 -- | Set the class name property
 setClassName :: String -> Element -> Fay ()
 setClassName = ffi "%2['className']=%1"
@@ -46,3 +52,11 @@ setInterval = ffi "window['setInterval'](%1,%2)"
 -- | Popup an alert window with the given input as message
 alert :: String -> Fay ()
 alert = ffi "window['alert'](%1)"
+
+-- | Implementation of mapM (should really be part of Fay-Base)
+mapM :: (a -> Fay b) -> [a] -> Fay [b]
+mapM _ [] = return []
+mapM f (x:xs) = do
+  vx  <- f x
+  vxs <- mapM f xs
+  return (vx:vxs)
