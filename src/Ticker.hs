@@ -13,7 +13,14 @@ data State = State {
   drawingContext :: Context
   , graphButtons :: [Element]
   , dataRenderer :: DataRenderer
+  , graphColors  :: Colors
   , startTime    :: Int
+  }
+             
+data Colors = Colors {
+  background :: String
+  , grid     :: String
+  , plot     :: String
   }
 
 -- | Init the ticker
@@ -38,6 +45,9 @@ tickerInit name = do
   state <- newRef $ State {drawingContext=context
                           , graphButtons=[curveButton,barButton]
                           , dataRenderer=renderDataPointsCurve
+                          , graphColors=Colors {background="#040404"
+                                               , grid="#358800"
+                                               , plot="red"}
                           , startTime=0}
            
   -- Install event handlers
@@ -78,17 +88,18 @@ render state = do
   state' <- readRef state
   let context = drawingContext state'
   let start   = startTime state'
+  let colors  = graphColors state'
       
   -- Fill the graph with the background color
-  setFillStyle context "#040404"
+  setFillStyle context $ background colors
   fillRect context (0, 0) (cwidth, cheight)
   
-  setStrokeStyle context "#358800"
+  setStrokeStyle context $ grid colors
   renderHorizonalLines context
   setFont context "9px sans-serif"
   let dummyData = mkDummyData 60 start 100
   renderTimeMarks context dummyData
-  setStrokeStyle context "red"
+  setStrokeStyle context $ plot colors
 
   -- The data renderer is taken from the state
   let renderer = dataRenderer state'
