@@ -9,6 +9,7 @@ import JSAPI
 import CanvasAPI
 import Ref
 
+-- | Mutable state for the ticker
 data State = State {
   drawingContext :: Context
   , graphButtons :: [Element]
@@ -18,11 +19,22 @@ data State = State {
   , startTime    :: Int
   }
              
+-- | Color descriptions for the ticker graph
 data Colors = Colors {
   background :: String
   , grid     :: String
   , plot     :: String
   }
+             
+-- | Data structure for the time serie data. The time serie will be
+-- rendered "as is", it's the server's responsibility to ensure the
+-- format of the time serie
+data TimeSerie = TimeSerie Double ([DataItem], [TimeItem])
+               deriving Show
+data DataItem  = DataItem Int Double
+               deriving Show
+data TimeItem  = TimeItem Int Int
+               deriving Show
 
 -- | Init the ticker
 tickerInit :: String -> Fay ()
@@ -227,13 +239,6 @@ gwidth = gright + 1; gheight = gbottom - gtop + 1
 -- | Dimensions for the time stamp text
 tbottom :: Double
 tbottom = cbottom - 2
-
-data TimeSerie = TimeSerie Double ([DataItem], [TimeItem])
-               deriving Show
-data DataItem  = DataItem Int Double
-               deriving Show
-data TimeItem  = TimeItem Int Int
-               deriving Show
 
 mkDummyData :: Int -> Int -> Double -> TimeSerie
 mkDummyData num start mx =
