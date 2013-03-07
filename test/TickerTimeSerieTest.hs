@@ -10,11 +10,11 @@ main = defaultMain tests
 
 tests = [
   testGroup "Test group 1" [
-     testProperty "Is eight chars" prop_timeIsEightChars
-     , testProperty "Has correct format" prop_timeHasCorrectFormat
-     , testProperty "Has correct seconds" prop_timeHasCorrectSeconds
-     , testProperty "Has correct minutes" prop_timeHasCorrectMinutes
-     , testProperty "Has correct hours" prop_timeHasCorrectHours
+     testProperty   "Time has eight chars" prop_timeIsEightChars
+     , testProperty "Time has correct format" prop_timeHasCorrectFormat
+     , testProperty "Time has correct seconds" prop_timeHasCorrectSeconds
+     , testProperty "Time has correct minutes" prop_timeHasCorrectMinutes
+     , testProperty "Time has correct hours" prop_timeHasCorrectHours
      ]
   ]
 
