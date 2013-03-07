@@ -40,19 +40,18 @@ mkSineTimeSerie num start mx =
     
 -- | Convert a number of seconds to format "hh:mm:ss"
 showTime :: Int -> String
-showTime s =
+showTime duration =
   let
-    s'   = s `mod` wrapPeriod
-    sec  = s' `mod` secPerMin
-    min' = (s' `div` secPerMin) `mod` minPerHour
-    hrs  = s' `div` secPerHour
+    sec  = wrappedDuration `mod` secPerMin
+    min' = (wrappedDuration `div` secPerMin) `mod` minPerHour
+    hrs  = wrappedDuration `div` secPerHour
   in
    (asStr hrs) ++ ":" ++ (asStr min') ++ ":" ++ (asStr sec)
    where
      asStr n
        | n < 10    = "0" ++ (show n)
        | otherwise = show n
-     wrapPeriod = 100 * secPerHour
-     secPerMin  = 60
-     minPerHour = 60
-     secPerHour = secPerMin * minPerHour
+     wrappedDuration = duration `mod` (100 * secPerHour)
+     secPerMin       = 60
+     minPerHour      = 60
+     secPerHour      = secPerMin * minPerHour
