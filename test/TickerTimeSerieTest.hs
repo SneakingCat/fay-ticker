@@ -9,15 +9,17 @@ main :: IO ()
 main = defaultMain tests
 
 tests = [
-  testGroup "Test group 1" [
+  testGroup "TimeSerie Tests" [
      testProperty   "Time has eight chars" prop_timeIsEightChars
      , testProperty "Time has correct format" prop_timeHasCorrectFormat
      , testProperty "Time has correct seconds" prop_timeHasCorrectSeconds
      , testProperty "Time has correct minutes" prop_timeHasCorrectMinutes
      , testProperty "Time has correct hours" prop_timeHasCorrectHours
+     , testProperty "TimeSerie has correct len" prop_timeSerieHasCorrectLength
      ]
   ]
 
+-- Properties for the timestamp to string conversion
 prop_timeIsEightChars :: Positive Int -> Bool
 prop_timeIsEightChars (Positive n) = length (showTime n) == 8
 
@@ -63,3 +65,12 @@ prop_timeHasCorrectHours (Positive n) =
 
 wrapSeconds :: Int -> Int
 wrapSeconds s = s `mod` (100 * 3600)
+
+-- Properties for the dummy data generator
+prop_timeSerieHasCorrectLength :: Positive Int    -> 
+                                    Positive Double -> 
+                                    Property
+prop_timeSerieHasCorrectLength (Positive s) (Positive m) =
+  forAll (choose (1, 100)) $ (\n -> checkLength n $ mkSineTimeSerie n s m)
+  where
+    checkLength num (TimeSerie _ (timeSerie, _)) = (length timeSerie) == num
