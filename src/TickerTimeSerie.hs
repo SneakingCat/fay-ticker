@@ -52,7 +52,7 @@ showTime s =
      asStr n
        | n < 10    = "0" ++ (show n)
        | otherwise = show n
-     wrapPeriod = 99 * secPerHour
+     wrapPeriod = 100 * secPerHour
      secPerMin  = 60
      minPerHour = 60
      secPerHour = secPerMin * minPerHour

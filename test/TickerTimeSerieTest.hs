@@ -19,11 +19,11 @@ tests = [
   ]
 
 prop_timeIsEightChars :: Positive Int -> Bool
-prop_timeIsEightChars (Positive n) = length (mkTime n) == 8
+prop_timeIsEightChars (Positive n) = length (showTime n) == 8
 
 prop_timeHasCorrectFormat :: Positive Int -> Bool
 prop_timeHasCorrectFormat (Positive n) = 
-  hasCorrectFormat $ mkTime $ wrapSeconds n
+  hasCorrectFormat $ showTime n
   where
     hasCorrectFormat [h1,h2,':',m1,m2,':',s1,s2] =
       (h1 >= '0' && h1 <= '9')
@@ -39,7 +39,7 @@ prop_timeHasCorrectSeconds (Positive n) =
   let
     n'   = wrapSeconds n
     s    = n' `mod` 60
-    sstr = drop 6 $ mkTime n'
+    sstr = drop 6 $ showTime n
   in
    s == (read sstr)
    
@@ -48,7 +48,7 @@ prop_timeHasCorrectMinutes (Positive n) =
   let
     n'   = wrapSeconds n
     m    = (n' `div` 60) `mod` 60
-    mstr = take 2 $ drop 3 $ mkTime n'
+    mstr = take 2 $ drop 3 $ showTime n
   in
    m == (read mstr)
    
@@ -57,23 +57,9 @@ prop_timeHasCorrectHours (Positive n) =
   let
     n'   = wrapSeconds n
     h    = n' `div` 3600
-    hstr = take 2 $ mkTime $ wrapSeconds n'
+    hstr = take 2 $ showTime n
   in
    h == (read hstr)
 
 wrapSeconds :: Int -> Int
-wrapSeconds s = s `mod` (99 * 3600)
-
-mkTime :: Int -> String
-mkTime s =
-  let
-    s'   = s `mod` (99 * 3600)
-    sec  = s' `mod` 60
-    min' = (s' `div` 60) `mod` 60
-    hrs  = s' `div` 3600
-  in
-   (asStr hrs) ++ ":" ++ (asStr min') ++ ":" ++ (asStr sec)
-   where
-     asStr n
-       | n < 10    = "0" ++ (show n)
-       | otherwise = show n
+wrapSeconds s = s `mod` (100 * 3600)
