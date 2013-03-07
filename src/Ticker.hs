@@ -119,7 +119,7 @@ renderTimeMarks context (TimeSerie _ (_,timeItems)) = do
       preservingMatrix context $ do
         translate context (xpos, tbottom)
         rotate context $ degToRad (-90)
-        strokeText context (secsToString s) (0, 0)
+        strokeText context (showTime s) (0, 0)
     )
   stroke context
   where
@@ -245,17 +245,3 @@ animate state = do
   writeRef state $ state' {timeSerie=mkSineTimeSerie 60 (startTime state') 100
                           , startTime=startTime state'+1}
   render state
-          
--- | Convert a number of seconds to format "hh:mm:ss"
-secsToString :: Int -> String
-secsToString s = 
-  let
-    sec = s `mod` 60
-    mns = (floor $ fromIntegral s/60) `mod` 60
-    hrs = floor $ fromIntegral s/3600
-  in
-   (toStr hrs) ++ ":" ++ (toStr mns) ++ ":" ++ (toStr sec)
-   where
-     toStr n
-       | n < 10    = "0" ++ (show n)
-       | otherwise = show n
