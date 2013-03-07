@@ -71,6 +71,6 @@ prop_timeSerieHasCorrectLength :: Positive Int    ->
                                     Positive Double -> 
                                     Property
 prop_timeSerieHasCorrectLength (Positive s) (Positive m) =
-  forAll (choose (1, 100)) $ (\n -> checkLength n $ mkSineTimeSerie n s m)
+  forAll (choose (0, 100)) $ (\n -> checkLength n $ mkSineTimeSerie n s m)
   where
     checkLength num (TimeSerie _ (timeSerie, _)) = (length timeSerie) == num
