@@ -15,8 +15,10 @@ tests = [
      , testProperty "Time has correct seconds" prop_timeHasSeconds
      , testProperty "Time has correct minutes" prop_timeHasMinutes
      , testProperty "Time has correct hours" prop_timeHasHours
-     , testProperty "TimeSerie has correct len" prop_timeSerieHasLength
-     , testProperty "TimeSerie has correct max" prop_timeSerieHasMaxValue
+     , testProperty "TimeSerie has correct length" prop_timeSerieHasLength
+     , testProperty "TimeSerie has correct max value" prop_timeSerieHasMaxValue
+     , testProperty "TimeSerie is >= zero" prop_timeSerieIsGteZero
+     , testProperty "TimeSerie is <= max" prop_timeSerieIsLteMax
      ]
   ]
 
@@ -72,7 +74,7 @@ prop_timeSerieHasLength :: Positive Int
                            -> Positive Double 
                            -> Property
 prop_timeSerieHasLength (Positive s) (Positive m) =
-  forAll (choose (0, 100)) $ (\n -> checkLength n $ mkSineTimeSerie n s m)
+  genSize (0, 100) $ (\n -> checkLength n $ mkSineTimeSerie n s m)
   where
     checkLength num (TimeSerie _ (timeSerie, _)) = (length timeSerie) == num
     
@@ -80,9 +82,28 @@ prop_timeSerieHasMaxValue :: Positive Int
                              -> Positive Double
                              -> Property
 prop_timeSerieHasMaxValue (Positive s) (Positive m) =
-  forAll (choose (1, 100)) $ (\n -> checkMaxValue m $ mkSineTimeSerie n s m)
+  genSize (1, 100) $ (\n -> checkMaxValue m $ mkSineTimeSerie n s m)
   where
     checkMaxValue mv (TimeSerie mv' (timeSerie, _)) = 
       mv == mv' && (maxInTimeSerie mv timeSerie) <= mv
     maxInTimeSerie mv timeSerie = foldl findMax mv timeSerie
     findMax mv (DataItem _ mv') = if mv' > mv then mv' else mv
+    
+prop_timeSerieIsGteZero :: Positive Int
+                             -> Positive Double
+                             -> Property
+prop_timeSerieIsGteZero (Positive s) (Positive m) =
+  genSize (1, 100) $ (\n -> checkBounds (>= 0) $ mkSineTimeSerie n s m)
+  
+prop_timeSerieIsLteMax :: Positive Int
+                          -> Positive Double
+                          -> Property
+prop_timeSerieIsLteMax (Positive s) (Positive m) =
+  genSize (1, 100) $ (\n -> checkBounds (<= m) $ mkSineTimeSerie n s m)
+  
+checkBounds :: (Double -> Bool) -> TimeSerie -> Bool
+checkBounds f (TimeSerie _ (timeSerie, _)) = 
+  foldl (\b (DataItem _ v) -> (f v) && b) True timeSerie
+
+genSize t = forAll (choose t)
+  
