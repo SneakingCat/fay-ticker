@@ -16,6 +16,7 @@ tests = [
      , testProperty "Time has correct minutes" prop_timeHasCorrectMinutes
      , testProperty "Time has correct hours" prop_timeHasCorrectHours
      , testProperty "TimeSerie has correct len" prop_timeSerieHasCorrectLength
+     , testProperty "TimeSerie has correct max" prop_timeSerieHasCorrectMaxValue
      ]
   ]
 
@@ -67,10 +68,21 @@ wrapSeconds :: Int -> Int
 wrapSeconds s = s `mod` (100 * 3600)
 
 -- Properties for the dummy data generator
-prop_timeSerieHasCorrectLength :: Positive Int    -> 
-                                    Positive Double -> 
-                                    Property
+prop_timeSerieHasCorrectLength :: Positive Int    
+                                  -> Positive Double 
+                                  -> Property
 prop_timeSerieHasCorrectLength (Positive s) (Positive m) =
   forAll (choose (0, 100)) $ (\n -> checkLength n $ mkSineTimeSerie n s m)
   where
     checkLength num (TimeSerie _ (timeSerie, _)) = (length timeSerie) == num
+    
+prop_timeSerieHasCorrectMaxValue :: Positive Int
+                                    -> Positive Double
+                                    -> Property
+prop_timeSerieHasCorrectMaxValue (Positive s) (Positive m) =
+  forAll (choose (1, 100)) $ (\n -> checkMaxValue m $ mkSineTimeSerie n s m)
+  where
+    checkMaxValue mv (TimeSerie mv' (timeSerie, _)) = 
+      mv == mv' && (maxInTimeSerie mv timeSerie) <= mv
+    maxInTimeSerie mv timeSerie = foldl findMax mv timeSerie
+    findMax mv (DataItem _ mv') = if mv' > mv then mv' else mv
