@@ -11,12 +11,12 @@ main = defaultMain tests
 tests = [
   testGroup "TimeSerie Tests" [
      testProperty   "Time has eight chars" prop_timeIsEightChars
-     , testProperty "Time has correct format" prop_timeHasCorrectFormat
-     , testProperty "Time has correct seconds" prop_timeHasCorrectSeconds
-     , testProperty "Time has correct minutes" prop_timeHasCorrectMinutes
-     , testProperty "Time has correct hours" prop_timeHasCorrectHours
-     , testProperty "TimeSerie has correct len" prop_timeSerieHasCorrectLength
-     , testProperty "TimeSerie has correct max" prop_timeSerieHasCorrectMaxValue
+     , testProperty "Time has correct format" prop_timeHasFormat
+     , testProperty "Time has correct seconds" prop_timeHasSeconds
+     , testProperty "Time has correct minutes" prop_timeHasMinutes
+     , testProperty "Time has correct hours" prop_timeHasHours
+     , testProperty "TimeSerie has correct len" prop_timeSerieHasLength
+     , testProperty "TimeSerie has correct max" prop_timeSerieHasMaxValue
      ]
   ]
 
@@ -24,8 +24,8 @@ tests = [
 prop_timeIsEightChars :: Positive Int -> Bool
 prop_timeIsEightChars (Positive n) = length (showTime n) == 8
 
-prop_timeHasCorrectFormat :: Positive Int -> Bool
-prop_timeHasCorrectFormat (Positive n) = 
+prop_timeHasFormat :: Positive Int -> Bool
+prop_timeHasFormat (Positive n) = 
   hasCorrectFormat $ showTime n
   where
     hasCorrectFormat [h1,h2,':',m1,m2,':',s1,s2] =
@@ -37,8 +37,8 @@ prop_timeHasCorrectFormat (Positive n) =
       && (s2 >= '0' && s2 <= '9')
     hasCorrectFormat _ = False
 
-prop_timeHasCorrectSeconds :: Positive Int -> Bool
-prop_timeHasCorrectSeconds (Positive n) =
+prop_timeHasSeconds :: Positive Int -> Bool
+prop_timeHasSeconds (Positive n) =
   let
     n'   = wrapSeconds n
     s    = n' `mod` 60
@@ -46,8 +46,8 @@ prop_timeHasCorrectSeconds (Positive n) =
   in
    s == (read sstr)
    
-prop_timeHasCorrectMinutes :: Positive Int -> Bool
-prop_timeHasCorrectMinutes (Positive n) =
+prop_timeHasMinutes :: Positive Int -> Bool
+prop_timeHasMinutes (Positive n) =
   let
     n'   = wrapSeconds n
     m    = (n' `div` 60) `mod` 60
@@ -55,8 +55,8 @@ prop_timeHasCorrectMinutes (Positive n) =
   in
    m == (read mstr)
    
-prop_timeHasCorrectHours :: Positive Int -> Bool
-prop_timeHasCorrectHours (Positive n) =
+prop_timeHasHours :: Positive Int -> Bool
+prop_timeHasHours (Positive n) =
   let
     n'   = wrapSeconds n
     h    = n' `div` 3600
@@ -68,18 +68,18 @@ wrapSeconds :: Int -> Int
 wrapSeconds s = s `mod` (100 * 3600)
 
 -- Properties for the dummy data generator
-prop_timeSerieHasCorrectLength :: Positive Int    
-                                  -> Positive Double 
-                                  -> Property
-prop_timeSerieHasCorrectLength (Positive s) (Positive m) =
+prop_timeSerieHasLength :: Positive Int    
+                           -> Positive Double 
+                           -> Property
+prop_timeSerieHasLength (Positive s) (Positive m) =
   forAll (choose (0, 100)) $ (\n -> checkLength n $ mkSineTimeSerie n s m)
   where
     checkLength num (TimeSerie _ (timeSerie, _)) = (length timeSerie) == num
     
-prop_timeSerieHasCorrectMaxValue :: Positive Int
-                                    -> Positive Double
-                                    -> Property
-prop_timeSerieHasCorrectMaxValue (Positive s) (Positive m) =
+prop_timeSerieHasMaxValue :: Positive Int
+                             -> Positive Double
+                             -> Property
+prop_timeSerieHasMaxValue (Positive s) (Positive m) =
   forAll (choose (1, 100)) $ (\n -> checkMaxValue m $ mkSineTimeSerie n s m)
   where
     checkMaxValue mv (TimeSerie mv' (timeSerie, _)) = 
