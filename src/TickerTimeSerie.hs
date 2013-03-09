@@ -32,10 +32,10 @@ mkSineTimeSerie num start mx =
    TimeSerie mx (d, t)
   where
     mkItem n  = DataItem n $ mkValue (n+start)
-    mkValue n = (1 + (sin $ freq * rad * fromIntegral n)) * (mx/2)
+    mkValue n = (1 + sin (freq * rad * fromIntegral n)) * (mx/2)
     mkTime n  = TimeItem n (n+start)
     isMod5 n  = n `mod` 5 == 0
-    rad       = (2*pi)/(fromIntegral num)
+    rad       = (2*pi)/fromIntegral num
     freq      = 2
     
 -- | Convert a number of seconds to format "hh:mm:ss"
@@ -46,10 +46,10 @@ showTime duration =
     min' = (wrappedDuration `div` secPerMin) `mod` minPerHour
     hrs  = wrappedDuration `div` secPerHour
   in
-   (asStr hrs) ++ ":" ++ (asStr min') ++ ":" ++ (asStr sec)
+   asStr hrs ++ ":" ++ asStr min' ++ ":" ++ asStr sec
    where
      asStr n
-       | n < 10    = "0" ++ (show n)
+       | n < 10    = '0':show n
        | otherwise = show n
      wrappedDuration = duration `mod` (100 * secPerHour)
      secPerMin       = 60
