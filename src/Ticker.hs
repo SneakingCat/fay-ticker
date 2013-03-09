@@ -53,13 +53,13 @@ tickerInit name = do
   selectFirst colorButtons'
   
   -- Create the global state
-  state <- newRef $ State {drawingContext=context
-                          , graphButtons =graphButtons'
-                          , colorButtons =colorButtons'
-                          , dataRenderer =renderDataPlotAsCurves
-                          , graphColors  =blackColorScheme
-                          , timeSerie    =mkSineTimeSerie 60 0 100
-                          , startTime    =1}
+  state <- newRef State {drawingContext=context
+                        , graphButtons =graphButtons'
+                        , colorButtons =colorButtons'
+                        , dataRenderer =renderDataPlotAsCurves
+                        , graphColors  =blackColorScheme
+                        , timeSerie    =mkSineTimeSerie 60 0 100
+                        , startTime    =1}
            
   -- Install event handlers
   addButtonListeners graphButtons' handleGraphButton 
@@ -197,11 +197,11 @@ blueColorScheme = Colors {background="#F2F7FE"
                          , plot     ="#7B899B"}          
           
 -- | Register a button callback
-addButtonListeners :: [Element]                                        -> 
-                      (Ref State -> i -> Element -> Event -> Fay Bool) -> 
-                      [i]                                              -> 
-                      Ref State                                        ->
-                      Fay ()
+addButtonListeners :: [Element]
+                      -> (Ref State -> i -> Element -> Event -> Fay Bool)
+                      -> [i]
+                      -> Ref State
+                      -> Fay ()
 addButtonListeners buttons cb items state =
   forM_ (zip buttons items) (\(b, i) ->
                               addEventListener b "click" (cb state i b))
@@ -211,11 +211,11 @@ selectFirst [] = return ()
 selectFirst (x:_) = setClassName "Selected" x
 
 -- | Handle the event of user clicking the graph buttons
-handleGraphButton :: Ref State    -> 
-                     DataRenderer -> 
-                     Element      -> 
-                     Event        -> 
-                     Fay Bool  
+handleGraphButton :: Ref State
+                     -> DataRenderer 
+                     -> Element
+                     -> Event
+                     -> Fay Bool  
 handleGraphButton state renderer me _ = do
   state' <- readRef state  
   mapM_ (setClassName "") $ graphButtons state'
@@ -225,11 +225,11 @@ handleGraphButton state renderer me _ = do
   return False
   
 -- | Handle the event of user clicking the color buttons
-handleColorButton :: Ref State -> 
-                     Colors    -> 
-                     Element   -> 
-                     Event     -> 
-                     Fay Bool
+handleColorButton :: Ref State
+                     -> Colors
+                     -> Element
+                     -> Event     
+                     -> Fay Bool
 handleColorButton state colors me _ = do
   state' <- readRef state
   mapM_ (setClassName "") $ colorButtons state'
