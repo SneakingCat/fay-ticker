@@ -136,7 +136,7 @@ translate' = ffi "%1['translate'](%2,%3)"
 -- | Draw a dotted line between the specified points, by using the
 -- given segment length
 dottedLine :: Context -> Point -> Point -> Double -> Fay ()
-dottedLine context start end seg = do
+dottedLine context start end seg =
   forM_ (genDottedLine start end seg) 
     (\(p1, p2) -> do
         moveTo context p1
