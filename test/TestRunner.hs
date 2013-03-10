@@ -1,6 +1,7 @@
 module Main (main) where
 
 import TickerTimeSerieTest
+import GeometryTest
 import Test.QuickCheck
 import Test.Framework (defaultMain, testGroup)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
@@ -20,4 +21,8 @@ tests = [
      , testProperty "TimeSerie is >= zero" prop_timeSerieIsGteZero
      , testProperty "TimeSerie is <= max" prop_timeSerieIsLteMax
      ]
+  , testGroup "Geometry Tests" [
+     testProperty   "Starting point is correct" prop_startPointIsCorrect
+     , testProperty "Points shall have equal sign" prop_pointsShallHaveEqualSign
+    ]
   ]

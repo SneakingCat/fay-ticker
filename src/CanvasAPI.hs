@@ -31,11 +31,11 @@ module CanvasAPI (
 import Prelude
 import FFI
 import JSAPI
+import Geometry
 
 data Context
 instance Foreign Context
 
-type Point = (Double, Double)
 type Dim = (Double, Double)
 
 -- | Get the given context from the canvas
@@ -141,23 +141,6 @@ dottedLine context start end seg =
     (\(p1, p2) -> do
         moveTo context p1
         lineTo context p2)
-
-genDottedLine :: Point -> Point -> Double -> [(Point, Point)]
-genDottedLine (sx,sy) (ex,ey) seg =
-  let dx    = ex-sx
-      dy    = ey-sy
-      l     = len dx dy
-      xStep = dx/l
-      yStep = dy/l
-      half  = seg/2
-  in
-   map (\n -> (
-           (sx + n * xStep, sy + n * yStep),
-           (sx + (n+half) * xStep, sy + (n+half) * yStep)
-           )) [0, seg .. l]
-   where
-     len :: Double -> Double -> Double
-     len dx dy = sqrt $ (dx^2) + (dy^2)
      
 -- | Preserving the transformation like in hOpenGL
 preservingMatrix :: Context -> Fay a -> Fay ()
