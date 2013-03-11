@@ -11,15 +11,16 @@ main = defaultMain tests
 
 tests = [
   testGroup "TimeSerie Tests" [
-     testProperty   "Time has eight chars" prop_timeIsEightChars
+     testProperty   "Time serie is <= max" prop_timeSerieIsLteMax
+     , testProperty "Time serie is >= zero" prop_timeSerieIsGteZero
+     , testProperty "Time serie is indexed" prop_timeSerieIsIndexed
+     , testProperty "Time stamps inc. by 5" prop_timeIncreasesByFive
+     , testProperty "Time stamp indices inc. by 5" prop_timeIndIncreasesByFive
+     , testProperty "Time has eight chars" prop_timeIsEightChars
      , testProperty "Time has correct format" prop_timeHasFormat
      , testProperty "Time has correct seconds" prop_timeHasSeconds
      , testProperty "Time has correct minutes" prop_timeHasMinutes
      , testProperty "Time has correct hours" prop_timeHasHours
-     , testProperty "TimeSerie has correct length" prop_timeSerieHasLength
-     , testProperty "TimeSerie has correct max value" prop_timeSerieHasMaxValue
-     , testProperty "TimeSerie is >= zero" prop_timeSerieIsGteZero
-     , testProperty "TimeSerie is <= max" prop_timeSerieIsLteMax
      ]
   , testGroup "Geometry Tests" [
      testProperty   "Starting point is correct" prop_startPtIsCorrect

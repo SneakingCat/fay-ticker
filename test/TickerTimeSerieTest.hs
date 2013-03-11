@@ -3,7 +3,62 @@ module TickerTimeSerieTest where
 import TickerTimeSerie
 import Test.QuickCheck
 
--- Properties for the timestamp to string conversion
+instance Arbitrary TimeSerie where
+  arbitrary = do
+    n <- choose (1, 100)
+    s <- choose (0, 1000000)
+    m <- choose (1, 1000000)
+    return $ mkSineTimeSerie n s m
+
+-- | Check that all generated values are less or equal to the max value
+prop_timeSerieIsLteMax :: TimeSerie -> Bool
+prop_timeSerieIsLteMax (TimeSerie mv (dataItems, timeItems)) =
+  foldl (checkBounds (<= mv)) True dataItems
+  
+-- | Check that all generated values are greater or equal to zero
+prop_timeSerieIsGteZero :: TimeSerie -> Bool
+prop_timeSerieIsGteZero (TimeSerie mv (dataItems, timeItems)) =
+  foldl (checkBounds (>= 0)) True dataItems
+
+-- | Check that the data items are indexed 0 -> num data items - 1
+prop_timeSerieIsIndexed :: TimeSerie -> Bool
+prop_timeSerieIsIndexed (TimeSerie mv (dataItems, timeItems)) =
+  let indices = map extractIndices dataItems
+  in  indices == [0..(length indices)-1]
+  where
+    extractIndices (DataItem i v) = i
+
+-- | Check that the time stamps (if any) are increasing in steps of five
+prop_timeIncreasesByFive :: TimeSerie -> Bool
+prop_timeIncreasesByFive (TimeSerie mv (dataItems, timeItems)) =
+  let times = map extractTimes timeItems
+  in  times == byFiveIncreasingList times
+  where
+    extractTimes (TimeItem i t) = t
+
+-- | Check that the time stamps' (if any) indices are increasing in
+-- steps of five
+prop_timeIndIncreasesByFive :: TimeSerie -> Bool
+prop_timeIndIncreasesByFive (TimeSerie mv (dataItems, timeItems)) =
+  let indices = map extractIndices timeItems
+  in  indices == byFiveIncreasingList indices
+  where
+    extractIndices (TimeItem i t) = i
+
+-- | Helper function to check the bounds of a DataItem
+checkBounds :: (Double -> Bool) -> Bool -> DataItem -> Bool
+checkBounds f b (DataItem i v) = b && f v
+
+-- | Helper function to generate a list which content increase by five
+-- - given a list which content it shall try to copy (without copying
+-- values)
+byFiveIncreasingList :: [Int] -> [Int]
+byFiveIncreasingList [] = []
+byFiveIncreasingList l  =
+  let s = head l
+      e = s + (5 * length l)
+  in [s,(s+5)..e-1]   
+
 prop_timeIsEightChars :: Positive Int -> Bool
 prop_timeIsEightChars (Positive n) = length (showTime n) == 8
 
@@ -50,42 +105,3 @@ prop_timeHasHours (Positive n) =
 
 wrapSeconds :: Int -> Int
 wrapSeconds s = s `mod` (100 * 3600)
-
--- Properties for the dummy data generator
-prop_timeSerieHasLength :: Positive Int    
-                           -> Positive Double 
-                           -> Property
-prop_timeSerieHasLength (Positive s) (Positive m) =
-  genSize (0, 100) (\n -> checkLength n $ mkSineTimeSerie n s m)
-  where
-    checkLength num (TimeSerie _ (timeSerie, _)) = length timeSerie == num
-    
-prop_timeSerieHasMaxValue :: Positive Int
-                             -> Positive Double
-                             -> Property
-prop_timeSerieHasMaxValue (Positive s) (Positive m) =
-  genSize (1, 100) (\n -> checkMaxValue m $ mkSineTimeSerie n s m)
-  where
-    checkMaxValue mv (TimeSerie mv' (timeSerie, _)) = 
-      mv == mv' && maxInTimeSerie mv timeSerie <= mv
-    maxInTimeSerie              = foldl findMax
-    findMax mv (DataItem _ mv') = if mv' > mv then mv' else mv
-    
-prop_timeSerieIsGteZero :: Positive Int
-                             -> Positive Double
-                             -> Property
-prop_timeSerieIsGteZero (Positive s) (Positive m) =
-  genSize (1, 100) (\n -> checkBounds (>= 0) $ mkSineTimeSerie n s m)
-  
-prop_timeSerieIsLteMax :: Positive Int
-                          -> Positive Double
-                          -> Property
-prop_timeSerieIsLteMax (Positive s) (Positive m) =
-  genSize (1, 100) (\n -> checkBounds (<= m) $ mkSineTimeSerie n s m)
-  
-checkBounds :: (Double -> Bool) -> TimeSerie -> Bool
-checkBounds f (TimeSerie _ (timeSerie, _)) = 
-  foldl (\b (DataItem _ v) -> f v && b) True timeSerie
-
-genSize t = forAll (choose t)
-  
