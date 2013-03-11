@@ -33,6 +33,8 @@ prop_ptsShallGoInEqualSteps :: DottedLine -> Bool
 prop_ptsShallGoInEqualSteps (DottedLine start end seg ps) =
   foldl (checkLength (seg/2)) True ps
 
+-- | Helper function to check that a reference points' sign is equal
+-- to other points. Intended to be used together with foldl
 checkSign :: Point -> Bool -> (Point, Point) -> Bool
 checkSign (x, y) b ((x', y'), (x'', y'')) =
   b && hasSameSign x x' x'' && hasSameSign y y' y''
@@ -42,9 +44,13 @@ checkSign (x, y) b ((x', y'), (x'', y'')) =
       | x < 0 && y < 0 && z < 0    = True
       | otherwise                  = False                                     
    
+-- | Helper function to check that the distance between two points are
+-- equal to a reference distance
 checkLength :: Double -> Bool -> (Point, Point) -> Bool
 checkLength seg b (p1,p2) = b && fuzzyEqual seg (lineLength p1 p2)
 
+-- Helper function to calculate the distance between two points using
+-- Pythargoras theoreme
 lineLength :: Point -> Point -> Double
 lineLength (x,y) (x',y') =
   let
@@ -53,5 +59,7 @@ lineLength (x,y) (x',y') =
   in
    sqrt $ dx^2+dy^2
 
+-- Helper function to perform a fuzzy comparison between to floating
+-- point numbers
 fuzzyEqual :: (Ord a, Floating a) => a -> a -> Bool
 fuzzyEqual a b = abs (a - b) < 0.000001
