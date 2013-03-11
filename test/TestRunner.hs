@@ -22,7 +22,8 @@ tests = [
      , testProperty "TimeSerie is <= max" prop_timeSerieIsLteMax
      ]
   , testGroup "Geometry Tests" [
-     testProperty   "Starting point is correct" prop_startPointIsCorrect
-     , testProperty "Points shall have equal sign" prop_pointsShallHaveEqualSign
+     testProperty   "Starting point is correct" prop_startPtIsCorrect
+     , testProperty "Points shall have eq. sign" prop_ptsShallHaveEqualSign
+     , testProperty "Points shall go in eq. steps" prop_ptsShallGoInEqualSteps
     ]
   ]
