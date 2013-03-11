@@ -59,9 +59,11 @@ byFiveIncreasingList l  =
       e = s + (5 * length l)
   in [s,(s+5)..e-1]   
 
+-- | Check that time stamp strings always are of length 9
 prop_timeIsEightChars :: Positive Int -> Bool
 prop_timeIsEightChars (Positive n) = length (showTime n) == 8
 
+-- | Check that the time stamps strings has the format "hh:mm:ss"
 prop_timeHasFormat :: Positive Int -> Bool
 prop_timeHasFormat (Positive n) = 
   hasCorrectFormat $ showTime n
@@ -76,32 +78,29 @@ prop_timeHasFormat (Positive n) =
     hasCorrectFormat _ = False
     inRange d (l,h) = d >= l && d <= h
 
+-- | Check that the "ss" part is correct
 prop_timeHasSeconds :: Positive Int -> Bool
 prop_timeHasSeconds (Positive n) =
-  let
-    n'   = wrapSeconds n
-    s    = n' `mod` 60
-    sstr = drop 6 $ showTime n
-  in
-   s == read sstr
-   
+  let n'   = wrapSeconds n
+      s    = n' `mod` 60
+      sstr = drop 6 $ showTime n
+  in  s == read sstr
+
+-- | Check that the "mm" part is correct
 prop_timeHasMinutes :: Positive Int -> Bool
 prop_timeHasMinutes (Positive n) =
-  let
-    n'   = wrapSeconds n
-    m    = (n' `div` 60) `mod` 60
-    mstr = take 2 $ drop 3 $ showTime n
-  in
-   m == read mstr
+  let n'   = wrapSeconds n
+      m    = (n' `div` 60) `mod` 60
+      mstr = take 2 $ drop 3 $ showTime n
+  in  m == read mstr
    
+-- | Check that the "hh" part is correct
 prop_timeHasHours :: Positive Int -> Bool
 prop_timeHasHours (Positive n) =
-  let
-    n'   = wrapSeconds n
-    h    = n' `div` 3600
-    hstr = take 2 $ showTime n
-  in
-   h == read hstr
+  let n'   = wrapSeconds n
+      h    = n' `div` 3600
+      hstr = take 2 $ showTime n
+  in  h == read hstr
 
 wrapSeconds :: Int -> Int
 wrapSeconds s = s `mod` (100 * 3600)

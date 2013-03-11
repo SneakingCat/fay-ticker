@@ -53,11 +53,9 @@ checkLength seg b (p1,p2) = b && fuzzyEqual seg (lineLength p1 p2)
 -- Pythargoras theoreme
 lineLength :: Point -> Point -> Double
 lineLength (x,y) (x',y') =
-  let
-    dx = x'-x
-    dy = y'-y
-  in
-   sqrt $ dx^2+dy^2
+  let dx = x'-x
+      dy = y'-y
+  in  sqrt $ dx^2+dy^2
 
 -- Helper function to perform a fuzzy comparison between to floating
 -- point numbers
