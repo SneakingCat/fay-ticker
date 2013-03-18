@@ -1,0 +1,25 @@
+name:			fay-ticker
+version:             	0.1.0.0
+synopsis:            	Ticker displaying network throughput using HTML5 canvas.
+-- description:         
+homepage:            	https://github.com/SneakingCat/fay-ticker
+license:             	GPL-3
+license-file:        	LICENSE
+author:              	Patrik Sandahl
+maintainer:          	sneakingcatsw@gmail.com
+-- copyright:           
+category:            	Web
+build-type:          	Custom
+cabal-version:       	>=1.8
+
+Executable fay-ticker-dummy
+  hs-source-dirs:	examples
+  Main-Is:		TickerAppDummy.hs
+  Build-Depends:	base >= 4
+
+Test-Suite fay-ticker-test
+  type:			exitcode-stdio-1.0
+  Main-is:		TestRunner.hs
+  hs-source-dirs:	src,test
+  Build-Depends:	base,test-framework-quickcheck2,
+                        test-framework,QuickCheck
